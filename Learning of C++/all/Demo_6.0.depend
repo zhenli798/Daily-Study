@@ -1,0 +1,12 @@
+# depslib dependency file v1.0
+1578563015 source:c:\users\administrator\desktop\try2\demo_6.0\function.cpp
+
+1578563264 source:c:\users\administrator\desktop\try2\demo_6.0\main.cpp
+	<iostream>
+	<cstring>
+	<cmath>
+	<stdlib.h>
+	"tools.h"
+
+1578562948 c:\users\administrator\desktop\try2\demo_6.0\tools.h
+
