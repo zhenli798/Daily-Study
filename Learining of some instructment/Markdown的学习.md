@@ -1,9 +1,6 @@
 <center><font size=20px><b>Markdown基本用法</b></font></center>
-
 <p> #调标题</p>
-
 <p>换行，俩个空格以上加enter</p>
-
 ***粗斜体文字***
 
 **粗体文字**
@@ -32,7 +29,7 @@
    		 alert('RUNOOB');
 			});`		
 
-```html
+```javascript
 javascript
 $(document).ready(function () {
     alert('RUNOOB');

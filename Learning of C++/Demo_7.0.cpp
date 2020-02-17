@@ -1,6 +1,7 @@
  /* FileName: Demo_7.0.cpp
   * Author: Li Zhen
   * E-mail: 798663691@qq.com
+  * Date: Jan 09, 2020 
   * Function: Calculating the average grade point of students
   */
 

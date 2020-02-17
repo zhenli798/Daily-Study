@@ -10,7 +10,8 @@
 
 using namespace std;
 
-int main(){
+int main()
+{
    int myriabit,kilobit,decade,unit,number;
    cout<<"请输入一个五位数：";
    cin>>number;
@@ -18,14 +19,18 @@ int main(){
    kilobit=(number%10000)/1000;
    decade=(number%100)/10;
    unit=number%10;
-   if(myriabit==unit){
-    if(kilobit==decade){
-        cout<<"Yes"<<endl;
-    }
-    else {cout<<"No"<<endl;
-    }
+   if(myriabit==unit)
+   {
+	    if(kilobit==decade)
+		{
+	        cout<<"Yes"<<endl;
+	    }
+	    else {cout<<"No"<<endl;
+	    }
    }
-   else {cout<<"No"<<endl;
+   else 
+   {
+   		cout<<"No"<<endl;
     }
    return 0;
 }//判断输入的五位数是否是回文数
