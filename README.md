@@ -1,7 +1,2 @@
 # Daily-Study
-Record daily learning<br/>
-Thanks for watching！
-
-
-
-restart
+记录日常学习生活
