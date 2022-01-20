@@ -1213,7 +1213,289 @@
 
      
 
-  
+### 使用$emit传递数据
+
+* **简介**：一种子组件向父组件传递数据或参数的方式。
+
+* **使用方法**：子组件通过`$emit()`来触发事件，父组件用`$on()`来监听子组件的事件或直接在子组件的自定义标签上使用`v-on`来监听子组件触发的自定义事件。
+
+* **解除监听**：`$off()`
+
+* **示例**：
+
+  * **描述**：子组件有两个按钮，分别实现+1和-1效果，在改变组件的data的`counter`后，通过`$emit()`再把它传递给父组件，父组件通过`$on()`或`v-on`来监听子组件触发的事件。
+
+  ```html
+  		<div id="app">
+  			<p>{{total}}</p>
+  			<!-- <my-component @increase="handleGetTotal" @decrease="handleGetTotal"></my-component> -->
+  			<my-component ref="child"></my-component>
+  		</div>
+  		<script type="text/javascript" src="../js/vue.js">
+  		</script>
+  		<script type="text/javascript">
+  			Vue.component('my-component', {
+  				template:'\
+  					<div>\
+  						<button @click="handleIncrease">+1</button>\
+  						<button @click="handleDecrease">-1</button>\
+  					</div>',
+  				data:function(){
+  					return {
+  						count:0
+  					}
+  				},
+  				methods:{
+  					handleIncrease:function(){
+  						this.count++;
+  						this.$emit('increase', this.count);
+  					},
+  					handleDecrease:function(){
+  						this.count--;
+  						this.$emit('decrease', this.count);
+  					}
+  				}
+  			})
+  			var app = new Vue({
+  				el:'#app',
+  				data:{
+  					total:0
+  				},
+  				methods:{
+  					handleGetTotal:function(total){
+  						this.total = total;
+  					}
+  				},
+  				mounted:function(){
+  					this.$refs.child.$on('increase', this.handleGetTotal);
+  					// this.$refs.child.$once('increase', this.handleGetTotal); 自定义事件只触发一次
+  					this.$refs.child.$on('decrease', this.handleGetTotal);
+  				}
+  			})
+  		</script>
+  ```
+
+* **补充**：除了用`v-on`在组件上监听自定义事件外，也可以监听DOM事件，这时可以用`.native`修饰符表示监听的是一个原生事件，监听的是该组件的根元素。例：`<my-component v-on:click.native="handleClick"></my-component>`
+
+* **使用v-model**：
+
+  * Vue2.x可以在自定义组件上使用v-model指令
+  * 在下面示例中，实现的效果仍是点击按钮+1，不过这次组件`$emit()`的事件名是特殊的input，在使用组件的父级，并没有在`<my-component>`上使用`@input="handler"`，而是直接用`v-model`绑定的一个`数据total`。
+
+  ```html
+  		<div id="app">
+  			<p>总数：{{total}}</p>
+  			<my-component v-model="total" ></my-component>
+  		</div>
+  		<script type="text/javascript" src="../js/vue.js">
+  		</script>
+  		<script type="text/javascript">
+  			Vue.component('my-component',{
+  				template:'<button @click="handleClick">+1</button>',
+  				data:function(){
+  					return {
+  						counter:0
+  					}
+  				},
+  				methods:{
+  					handleClick:function(){
+  						this.counter++;
+  						this.$emit('input', this.counter);
+  					}
+  				}
+  			});
+  			var app = new Vue({
+  				el:'#app',
+  				data:{
+  					total:0
+  				}
+  			})
+  		</script>
+  ```
+
+  在上例的v-model，相当于下面的操作：
+
+  ```html
+  		<div id="app">
+  			<p>总数：{{total}}</p>
+  			<my-component @input="handleGetTotal" ></my-component>
+  		</div>
+  		<script type="text/javascript" src="../js/vue.js">
+  		</script>
+  		<script type="text/javascript">
+  			Vue.component('my-component',{
+  				template:'<button @click="handleClick">+1</button>',
+  				data:function(){
+  					return {
+  						counter:0
+  					}
+  				},
+  				methods:{
+  					handleClick:function(){
+  						this.counter++;
+  						this.$emit('input', this.counter);
+  					}
+  				}
+  			});
+  			var app = new Vue({
+  				el:'#app',
+  				data:{
+  					total:0
+  				},
+  				methods:{
+  					handleGetTotal(total){
+  						this.total = total;
+  					}
+  				}
+  			})
+  		</script>
+  ```
+
+  利用v-model这一特殊用途，还可以创建自定义表单输入组件，进行数据双向绑定，例如：
+
+  ```html
+  		<div id="app">
+  			<p>总数：{{total}}</p>
+  			<my-component v-model="total" ></my-component>
+  			<button @click="handleReduce">-1</button>
+  		</div>
+  		<script type="text/javascript" src="../js/vue.js">
+  		</script>
+  		<script type="text/javascript">
+  			Vue.component('my-component',{
+  				props:['value'],
+  				template:'<input :value="value" @input="updateValue">',
+  				methods:{
+  					updateValue:function(event){
+  						this.$emit('input', event.target.value);
+  					}
+  				}
+  			});
+  			var app = new Vue({
+  				el:'#app',
+  				data:{
+  					total:0
+  				},
+  				methods:{
+  					handleReduce:function(){
+  						this.total--;
+  					}
+  				}
+  			})
+  		</script>
+  ```
+
+  实现上述一个具有双向绑定的v-model组件要满足如下2个要求：
+
+  1. 接收一个value属性
+  2. 在有新的value时触发input事件
+
+### 使用中央事件总线bus传递数据
+
+* **简介**：一种适用于<font color = red>任意组件间通信</font>的方式
+
+* **安装**：
+
+  ```javascript
+  new Vue({
+  	......
+  	beforeCreate() {
+  		Vue.prototype.$bus = this //安装全局事件总线，$bus就是当前应用的vm
+  	},
+      ......
+  }) 
+  ```
+
+* **使用事件总线**：
+
+  1. 接收数据：A组件想接收数据，则在A组件中给$bus绑定自定义事件，事件的<span style="color:red">回调留在A组件自身。</span>
+
+     ```javascript
+     methods(){
+       demo(data){......}
+     }
+     ......
+     mounted() {
+       this.$bus.$on('xxxx',this.demo)
+     }
+     ```
+
+  2. 提供数据：`this.$bus.$emit('xxxx',数据)`
+
+* **解绑时机**：在`beforeDestroy`钩子中，用`$off`去解绑当前<font color = red>当前组件所用到的</font>事件。
+
+* **示例**：
+
+  ```html
+  <div id="app">
+  			<component-a></component-a>
+  			<br/>
+  			<component-b></component-b>
+  			<button @click="sendMessage">点我向儿子组件发送数据</button>
+  		</div>
+  		<script type="text/javascript" src="../js/vue.js">
+  		</script>
+  		<script type="text/javascript">
+  			var app = new Vue({
+  				el:'#app',
+  				data:{
+  					message:'我是根组件的数据'
+  				},
+  				components:{
+  					'component-a':{
+  						template:'<div>\
+  						这是来自根组件的信息：{{messageRoot}}<br/>\
+  						这是来自兄弟组件的信息：{{messageBrother}}\
+  						</div>',
+  						data:function(){
+  							return {
+  								messageRoot:'',
+  								messageBrother:''
+  							}
+  						},
+  						methods:{
+  							getRootMessage:function(message){
+  								this.messageRoot = message;
+  							},
+  							getBrotherMessage:function(message){
+  								this.messageBrother = message;
+  							}
+  						},
+  						mounted:function(){
+  							// 给bus绑定自定义事件，回调留在自身，说明我想获得数据
+  							this.$bus.$on('RootMessage', this.getRootMessage); 
+  							this.$bus.$on('BrotherMessage', this.getBrotherMessage);
+  						}
+  					},
+  					'component-b':{
+  						template:'<div>\
+  							<button @click="sendMessage">点我向兄弟组件发送数据</button>\
+  						</div>',
+  						data:function(){
+  							return {
+  								message:'我是兄弟组件的数据'
+  							}
+  						},
+  						methods:{
+  							sendMessage(){
+  								this.$bus.$emit('BrotherMessage', this.message);
+  							}
+  						}
+  					}
+  				},
+  				methods:{
+  					sendMessage(){
+  						this.$bus.$emit('RootMessage', this.message);
+  					}
+  				},
+  				beforeCreate(){
+  					Vue.prototype.$bus = this; // 安装中央事件总线bus
+  				}
+  			})
+  		</script>
+  ```
 
   
+
+
 
