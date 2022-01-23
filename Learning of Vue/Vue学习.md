@@ -1495,7 +1495,488 @@
   		</script>
   ```
 
-  
+
+### 父链
+
+* **引言**：在子组件中，使用`this.$parent`可以直接访问该组件的父实例或组件，父组件也可以通过`this.$children`访问它所有的子组件，而且可以递归向上或向下无限访问，直到根实例或最内层的组件。
+
+* **示例代码**：
+
+  ```html
+  		<div id="app">
+  			<p>这是来自子组件传递的信息：{{message}}</p>
+  			<component-a></component-a>
+  		</div>
+  		<script type="text/javascript" src="../js/vue.js">
+  		</script>
+  		<script type="text/javascript">
+  			Vue.component('component-a',{
+  				template:'\
+  					<div>\
+  						<input type="text" v-model="text" placeholder="请输入需要传递的消息"><br/>\
+  						<button @click="handleClick">向父组件发送消息</button>\
+  					</div>',
+  				methods:{
+  					handleClick(){
+  						this.$parent.message = this.text;
+  					}
+  				},
+  				data(){
+  					return {
+  						text:''
+  					}
+  				}
+  			})
+  			var app = new Vue({
+  				el:"#app",
+  				data:{
+  					message:''
+  				}
+  			})
+  		</script>
+  ```
+
+* **补充**：尽管Vue允许这样操作，但在业务中，子组件应该尽可能避免依赖父组件的数据，更不应该去主动修改它的数据，因为这样使得父子组件紧耦合，只看父组件，很难理解父组件的状态，因为它可能被任意组件修改，理想情况下，只有组件自己能修改它的状态。父子组件最好还是通过`props`和`$emit`来通信。
+
+### 子组件索引
+
+* **引言**：当子组件较多时，通过`this.$children`来一一遍历出我们需要的一个组件实例是比较困难的，尤其是组件动态渲染时，它们的序列是不固定的。Vue提供了子组件索引的方法，用特殊的属性`ref`来为子组件指定一个索引名称。
+
+* **示例代码**：
+
+  * 在父组件模板中，子组件标签上使用ref指定一个名称，并在父组件内通过`this.$refs`来访问指定名称的子组件。
+  * 注意：`$refs`只在组件渲染完成后才填充，并且它是非响应式的。它仅仅作为一个直接访问子组件的应急方案，应当避免在模板或计算属性中使用`$refs`。以计算属性为例，它是在created之后mounted之前，`$refs`是在mounted之后。
+
+  ```html
+  		<div id="app">
+  			<p>这是来自子组件传递的信息：{{message}}</p>
+  			<component-a ref="comA"></component-a>
+  			<br/>
+  			<button @click="handleClick">打印子组件中文本信息</button>
+  		</div>
+  		<script type="text/javascript" src="../js/vue.js">
+  		</script>
+  		<script type="text/javascript">
+  			Vue.component('component-a',{
+  				template:'\
+  					<div>\
+  						<input type="text" v-model="text" placeholder="请输入需要传递的消息"><br/>\
+  						<button @click="handleClick">向父组件发送消息</button>\
+  					</div>',
+  				methods:{
+  					handleClick(){
+  						this.$parent.message = this.text;
+  					}
+  				},
+  				data(){
+  					return {
+  						text:''
+  					}
+  				}
+  			})
+  			var app = new Vue({
+  				el:"#app",
+  				data:{
+  					message:''
+  				},
+  				methods:{
+  					handleClick(){
+  						console.log(this.$refs.comA.text);
+  					}
+  				}
+  			})
+  		</script>
+  ```
+
+* **补充**：与Vue1.x不同的是，Vue2.x将v-el和v-ref合并为了ref，Vue会自动去判断是普通标签还是组件。可以使用下面代码去查看：
+
+  ```html
+  		<div id="app">
+  			<p ref="tag">这是来自子组件传递的信息：{{message}}</p>
+  			<component-a ref="comA"></component-a>
+  			<br/>
+  			<button @click="handleClick">点我查看ref特性</button>
+  		</div>
+  		<script type="text/javascript" src="../js/vue.js">
+  		</script>
+  		<script type="text/javascript">
+  			Vue.component('component-a',{
+  				template:'\
+  					<div>\
+  						<input type="text" v-model="text" placeholder="请输入需要传递的消息"><br/>\
+  						<button @click="handleClick">向父组件发送消息</button>\
+  					</div>',
+  				methods:{
+  					handleClick(){
+  						this.$parent.message = this.text;
+  					}
+  				},
+  				data(){
+  					return {
+  						text:''
+  					}
+  				}
+  			})
+  			var app = new Vue({
+  				el:"#app",
+  				data:{
+  					message:''
+  				},
+  				methods:{
+  					handleClick(){
+  						console.log(this.$refs.comA, this.$refs.tag);
+  					}
+  				}
+  			})
+  		</script>
+  ```
 
 
+### 使用Slot分发内容
+
+* **使用场景**：当需要让组件组合使用，混合父组件的内容与子组件的模板时，就会用到Slot，这个过程叫作内容分发(transclusion)。
+
+* **用法**：
+
+  * **单个Slot**：
+
+    * 在子组件内使用特殊的`<slot>`元素就可以为这个子组件开启一个Slot(插槽)，在父组件模板里，插入在子组件标签内的所有内容将替代子组件的`<slot>`标签及它的内容。示例代码：
+
+      ```html
+      		<div id="app">
+      			<component-a></component-a>
+      			<hr/>
+      			<component-a>
+      				<ul>
+      					<li>苹果</li>
+      					<li>梨</li>
+      				</ul>
+      			</component-a>
+      		</div>
+      		<script type="text/javascript" src="../js/vue.js">
+      		</script>
+      		<script type="text/javascript">
+      			Vue.component('component-a',{
+      				template:'<div>\
+      					<slot>\
+      						<p>默认内容</p>\
+      					</slot>\
+      				</div>'
+      			})
+      			var app = new Vue({
+      				el:'#app'
+      			})
+      		</script>
+      ```
+      * 上述代码解释：子组件componet-a的模板内定义了一个`<slot>`元素，并且用一个`<p>`作为默认的内容，在父组件没有使用Slot时，会渲染这段默认的文本；如果写入了Slot，那就会替换整个`<slot>`。所以上例渲染后结果为：
+
+        ```html
+        <div id="app">
+        	<div>
+        		<p>默认内容</p>
+        	</div>
+        	<hr/>
+        	<div>
+                <ul>
+                    <li>苹果</li>
+                    <li>梨</li>
+                </ul>
+        	</div>
+        </div>
+        ```
+
+    * **注意**：
+
+      * Slot分发的内容，作用域是在父组件上的。
+      * 子组件`<slot>`内的备用内容，它的作用域是子组件本身。
+
+  * **具名Slot**：
+
+    * **定义**：指定了name的`<slot>`元素称为具名Slot。
+
+    * **补**：具名Slot可以与单个Slot共存，用于分发多个内容。
+
+    * **代码示例**：
+
+      ```html
+      		<div id="app">
+      			<component-a>
+      				<h2 slot="header">标题</h2>
+      				<p>正文内容</p>
+      				<p>更多的正文内容</p>
+      				<div slot="footer">底部信息</div>
+      				<p>正文内容2</p>
+                  </component-a>
+      		</div>
+      		<script type="text/javascript" src="../js/vue.js">
+      		</script>
+      		<script type="text/javascript">
+      			Vue.component('component-a',{
+      				template:'<div>\
+      					<div class="container">\
+      						<div class="header">\
+      							<slot name="header">\
+      								<p>默认头部内容</p>\
+      							</slot>\
+      						</div>\
+      						<div class="main">\
+      							<slot>\
+      								<p>默认主体内容</p>\
+      							</slot>\
+      						</div>\
+      						<div class="footer">\
+      							<slot name="footer">\
+      								<p>默认尾部内容</p>\
+      							</slot>\
+      						</div>\
+      					</div>\
+      				</div>'
+      			})
+      			var app = new Vue({
+      				el:'#app'
+      			})
+      		</script>
+      ```
+
+    * **上述代码解释**：子组件内声明了3个`<slot>`元素，其中在`<div class="main">`内的`<slot>`没有使用name特性，它将作为默认slot出现，父组件没有使用slot特性的元素与内容都将出现在这里。故最终渲染结果为：
+
+      ```html
+      <div id="app">
+          <div>
+              <div class="container">
+                  <div class="header">
+                      <h2>
+                          标题
+                      </h2>
+                  </div>
+                  <div class="body">
+                      <p>
+                          正文内容
+                      </p>
+                      <p>
+                          更多的正文内容
+                      </p>
+                      <p>
+                          正文内容2
+                      </p>
+                  </div>
+                 	<div class="footer">
+                      <div>
+                          底部信息
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+      ```
+
+* **作用域插槽**：
+
+  * **简介**：一种特殊的slot，使用一个可以复用的模板替换已渲染元素。
+
+  * **使用场景**：既可以复用子组件的slot，又可以使slot内容不一致。
+
+  * **简单示例**：
+
+    ```html
+    		<div id="app">
+    			<component-a>
+    				<template scope="props">
+    					<p>来自父组件的内容</p>
+    					<p>{{props.msg}}</p>
+    				</template>
+    			</component-a>
+    		</div>
+    		<script type="text/javascript" src="../js/vue.js">
+    		</script>
+    		<script type="text/javascript">
+    			Vue.component('component-a',{
+    				template:'<div class="container">\
+    					<slot msg="来自子组件的内容"></slot>\
+    				</div>'
+    			})
+    			var app = new Vue({
+    				el:'#app'
+    			})
+    		</script>
+    ```
+
+    * **上述代码分析**：观察子组件的模板，在`<slot>`元素上有一个类似props传递数据给组件的写法msg="xxxx"，将数据传到了插槽。父组件使用了`<template>`元素，而且拥有了一个scope="props"的特性，这里的props知识一个临时变量，就像v-for="item in items"里面的item一样。template内可以通过临时变量 props访问来自子组件插槽的数据msg。上例代码渲染后最终结果为：
+
+      ```html
+      <div>
+          <div class="container">
+              <p>
+                  来自父组件的内容
+              </p>
+              <p>
+                  来自子组件的内容
+              </p>
+          </div>
+      </div>
+      ```
+
+  * **代表性用例—列表组件**：允许组件自定义应该如何渲染列表每一项。
+
+    ```html
+    		<div id="app">
+    			<my-list :books="books">
+    				<!-- 作用域插槽也可以是具名的slot -->
+    				<template slot="book" scope="props">
+    					<li>{{props.bookName}}</li>
+    				</template>
+    			</my-list>
+    		</div>
+    		<script type="text/javascript" src="../js/vue.js">
+    		</script>
+    		<script type="text/javascript">
+    			Vue.component('my-list',{
+    				props:{
+    					books:{
+    						type:Array,
+    						default:function(){
+    							return [];
+    						}
+    					}
+    				},
+    				template:'\
+    					<ul>\
+    						<slot name="book"\
+    							v-for="book in books"\
+    							:book-name="book.name">\
+    							<!--此处也可以写slot的默认内容-->\
+    						</slot>\
+    					</ul>\
+    				'
+    			})
+    			var app = new Vue({
+    				el:'#app',
+    				data:{
+    					books:[
+    						{name:'《Vue.js实战》'},
+    						{name:'《JavaScript语言精粹》'}
+    					]
+    				}
+    			})
+    		</script>
+    ```
+
+    * **上述代码分析**：子组件my-list接收一个来自父级的props数组books，并将它在name为book的slot上使用v-for指令循环，同时暴露一个变量bookName。
+
+* **访问slot**：在Vue.js. 1.x中，想要获取某个slot是比较麻烦的，需要用v-el间接获取。而Vue.js 2.x提供了用来访问被slot分发的内容的方法$slots。
+
+  * **代码示例**：
+
+    ```html
+    		<div id="app">
+    			<component-a>
+    				<h2 slot="header">标题</h2>
+    				<p>正文内容</p>
+    				<p>更多正文内容</p>
+    				<div slot="footer">底部信息</div>
+    			</component-a>
+    		</div>
+    		<script type="text/javascript" src="../js/vue.js">
+    		</script>
+    		<script type="text/javascript">
+    			Vue.component('component-a',{
+    				template:'\
+    					<div class="container">\
+    						<div class="header">\
+    							<slot name="header"></slot>\
+    						</div>\
+    						<div class="body">\
+    							<slot></slot>\
+    						</div>\
+    						<div class="footer">\
+    							<slot name="footer"></slot>\
+    						</div>\
+    					</div>\
+    				',
+    				mounted(){
+    					var header = this.$slots.header;// 都是vnode类型数组
+    					var main = this.$slots.default;
+    					var footer = this.$slots.footer;
+    					console.log(header);
+    					console.log(footer);
+    					console.log(footer[0].elm.innerHTML);
+    				}
+    			})
+    			var app = new Vue({
+    				el:'#app'
+    			})
+    		</script>
+    ```
+
+  * **示例代码分析**：通过$slots可以访问某个具名slot，this.$slots.default包括了所有没有被包含在具名slot中的节点。
+
+  * **使用场景**：独立组件开发中，业务中几乎用不到。
+
+### 组件高级用法
+
+* **递归组件**：组件在它的模板内可以递归地调用自己，只要给组件设置name的选项就可以了
+
+  * 示例代码：
+
+    ```html
+    		<div id="app">
+    			<component-a></component-a>
+    		</div>
+    		<script type="text/javascript" src="../js/vue.js">
+    		</script>
+    		<script type="text/javascript">
+    			Vue.component('component-a',{
+    				name:'component-a',
+    				props:{
+    					count:{
+    						type:Number,
+    						default:1
+    					}
+    				},
+    				template:'\
+    					<div class="child">\
+    						<component-a :count="count+1"\
+    							v-if="count<3"></component-a>\
+    					</div>'	
+    			});
+    			var app = new Vue({
+    				el:'#app',
+    			})
+    		</script>
+    ```
+
+  * 注意：必须给出一个条件来限制递归数量，否则会抛出：`max stack size exceeded`。
+
+  * 用途：组件递归使用可以用来开发一些具有未知层级关系的独立组件，比如级联选择器和树形控件等。
+
+* **内联模板**：组件的模板一般都是在template选项内定义的，Vue提供了一个内联模板的功能，在使用组件时，给组件标签使用`inline-template`特性，组件就会把它的内容当作模板，而不是把它当内容分发，这让模板更加灵活。
+
+  * 示例代码：
+
+    ```html
+    		<div id="app">
+    			<component-a inline-template>
+    				<div>
+    					<h2>在父组件中定义子组件模板</h2>
+    					<p>{{msg}}</p>
+    				</div>
+    			</component-a>
+    		</div>
+    		<script type="text/javascript" src="../js/vue.js">
+    		</script>
+    		<script type="text/javascript">
+    			Vue.component('component-a',{
+    				data(){
+    					return {
+    						msg:'在子组件中声明的数据'
+    					}
+    				}
+    			})
+    			var app = new Vue({
+    				el:'#app'
+    			})
+    		</script>
+    ```
+
+    
 
