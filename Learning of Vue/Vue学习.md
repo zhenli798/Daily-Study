@@ -993,7 +993,7 @@
 
 #### .lazy
 
-在输入框中，`v-model默认`是在`input事件`中同步输入框的数据(除了提示中介绍的中文输入 法情况外)，使用修饰符`.lazy`会转变为在`change`事件中同步，示例代码如下：
+在输入框中，`v-model默认`是在`input事件`中同步输入框的数据(除了提示中介绍的中文输入法情况外)，使用修饰符`.lazy`会转变为在`change`事件中同步，示例代码如下：
 
 ```html
 		<div id="app">
@@ -1978,5 +1978,157 @@
     		</script>
     ```
 
-    
+
+* **动态组件**：Vue.js提供了一个特殊的元素`<component>`用来动态地挂载不同的组件，使用js特性来选择要挂载的组件。
+
+  * 示例代码：
+
+    ```html
+    		<div id="app">
+    			<component :is="currentView"></component>
+    			<button @click="changeComponent('A')">切换到组件A</button>
+    			<button @click="changeComponent('B')">切换到组件B</button>
+    			<button @click="changeComponent('C')">切换到组件C</button>
+    		</div>
+    		<script type="text/javascript" src="../js/vue.js">
+    		</script>
+    		<script type="text/javascript">
+    			
+    			var app = new Vue({
+    				el:'#app',
+    				components:{
+    					comA:{
+    						template:'<div>组件A</div>'
+    					},
+    					comB:{
+    						template:'<div>组件B</div>'
+    					},
+    					comC:{
+    						template:'<div>组件C</div>'
+    					}
+    				},
+    				data:{
+    					currentView:'comA'
+    				},
+    				methods:{
+    					changeComponent(id){
+    						this.currentView = 'com' + id;
+    					}
+    				}
+    			})
+    		</script>
+    ```
+
+  * 上述示例代码中动态地改变currentView的值就可以动态挂载组件了。另外还可以直接绑定在组件对象上，代码如下：
+
+    ```html
+    		<div id="app">
+    			<component :is="currentView"></component>
+    		</div>
+    		<script type="text/javascript" src="../js/vue.js">
+    		</script>
+    		<script type="text/javascript">
+    			var Home = {
+    				template:'<div>Welcome Home!</div>'
+    			}
+    			var app = new Vue({
+    				el:'#app',
+    				data:{
+    					currentView:Home
+    				}
+    			})
+    		</script>
+    ```
+
+* **异步组件**：当你的工程足够大，使用的组件足够多时，是时候考虑下性能问题了，因为一开始把所有的组件都加载是没必要的一笔开销。但是Vue.js允许将组件定义为一个工厂函数，动态地解析组件。Vue.js只在组件需要渲染时触发工厂函数，并且把结果缓存起来，用于后面的再次渲染。
+
+  * 示例代码：
+
+    ```html
+    		<div id="app">
+    			<child-component></child-component>
+    		</div>
+    		<script type="text/javascript" src="../js/vue.js">
+    		</script>
+    		<script type="text/javascript">
+    			Vue.component('child-component', function(resolve, reject){
+    				window.setTimeout(function(){
+    					resolve({
+    						template:'<div>我是异步渲染的!</div>'
+    					});
+    				}, 2000);
+    			})
+    			var app = new Vue({
+    				el:'#app'
+    			})
+    		</script>
+    ```
+
+  * 上述代码中，工厂函数接收一个resolve回调，在收到从服务器下载的组件定义时调用。也可以调用reject(reason)指示加载失败。上述代码的setTimeout只是为了演示异步，具体的下载逻辑可以自己决定，比如把组件配置写成一个对象配置，通过ajax来请求，然后调用resolve传入配置选项。
+
+### 其他
+
+* **`$nextTick`**：首先先了解一下下面这个场景：有一个div，默认用v-if将它隐藏，点击一个按钮后，改变v-if的值，让它显示出来，同时拿到这个div的文本内容。如果v-if的值是false，直接去获取div的内容是获取不到的，因为此时div还没有被创建出来，那么应该在点击按钮后，改变v-if的值为true，div才会被创建，此时再去获取，示例代码如下：
+
+  ```html
+  		<div id="app">
+  			<div id="div" v-if="showDiv">这是一段文本</div>
+  			<button  @click="getInformation">获取div内容</button>
+  		</div>
+  		<script type="text/javascript" src="../js/vue.js">
+  		</script>
+  		<script type="text/javascript">
+  			var app = new Vue({
+  				el:'#app',
+  				data:{
+  					showDiv:false
+  				},
+  				methods:{
+  					getInformation(){
+  						this.showDiv = true;
+  						var text = document.getElementById('div').innerHTML;
+  						console.log(text);
+  					}
+  				}
+  			})
+  		</script>
+  ```
+
+  在这段代码运行后，点击按钮获取div内容时，在控制台会抛出一个错误：`Cannot read property 'innerHTML' of null`，意思就是获取不到div元素。这里就涉及Vue一个重要的概念：<font color = red>异步更新队列</font>。
+
+  Vue异步更新DOM的原理：Vue在观察到数据变化时并不是直接更新DOM，而是开启一个队列，并缓冲在同一事件循环中发生的所有数据改变。在缓冲时会去除重复数据，从而避免不必要的计算和DOM操作。然后，在下一个事件循环tick中，Vue刷新队列并执行实际(已去重)工作。也就是说如果你用一个for循环来动态改变一个数据100次，其实它只会应用最后一次改变，如果没有这种机制，DOM就要重绘100次，这会是一个很大的开销。
+
+  故而在上面的代码中，在执行`this.showDiv = true`时，div仍然是还没有被创建出来，直到下一个Vue事件循环时，才开始创建。`$nextTick`就是用来知道什么时候DOM更新完成的，所以上面的示例代码需要修改为：
+
+  ```html
+  		<div id="app">
+  			<div id="div" v-if="showDiv">这是一段文本</div>
+  			<button  @click="getInformation">获取div内容</button>
+  		</div>
+  		<script type="text/javascript" src="../js/vue.js">
+  		</script>
+  		<script type="text/javascript">
+  			var app = new Vue({
+  				el:'#app',
+  				data:{
+  					showDiv:false
+  				},
+  				methods:{
+  					getInformation(){
+  						this.showDiv = true;
+  						this.$nextTick(function(){
+  							var text = document.getElementById('div').innerHTML;
+  							console.log(text);
+  						});
+  					}
+  				}
+  			})
+  		</script>
+  ```
+
+  这时再点击按钮，控制台就不会报错，就打印出div的内容”这是一段文本“了。
+
+  理论上我们应该不用去主动操作DOM，因为Vue的核心思想就是数据驱动DOM，但在很多业务里，我们避免不了会使用一些第三方库，比如propper.js、swiper等，这些基于原生JavaScript库都有创建和更新及销毁的完整生命周期，与Vue配合使用时，就要利用好`$nextTick`。
+
+
 
