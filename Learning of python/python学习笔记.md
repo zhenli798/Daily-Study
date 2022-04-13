@@ -78,6 +78,87 @@ print(chinese_zodiac[year%12])
 3. 序列*整数
 4. 序列[0:整数]
 
+```python
+chinese_zodiac = '猴鸡狗猪鼠牛虎兔龙蛇马羊'
 
+print('狗' in chinese_zodiac)
+print('狗' not in chinese_zodiac)
+print(chinese_zodiac + 'abcd')
+print(chinese_zodiac * 3)
+```
 
- 
+### 2.4 元组的定义和常用操作
+
+* 比较操作
+
+```python
+a = (4)
+b = (5)
+print(a > b) # 元组当中只有一个数时是按这一个元素的大小去比较
+print(a < b)
+c = (1,50)
+d = (1,200)
+print(c > d) # 当元组中有两个元素的时候是将这两个元素结合之后进行比较，此处是150 > 1200
+print(c < d)
+```
+
+* 案例演示
+
+```python
+# 输入一个日期判断其是哪个星座
+zodiac_name = (u'魔羯座', u'水瓶座', u'双鱼座', u'白羊座', u'金牛座', u'双子座', u'巨蟹座',
+           u'狮子座', u'处女座', u'天秤座', u'天蝎座', u'射手座') # 在这u是指unicode编码，防止乱码
+zodiac_days = ((1, 20), (2, 19), (3, 21), (4, 21), (5, 21), (6, 22), (7, 23),
+               (8, 23), (9, 23), (10, 23), (11, 23), (12, 23))
+(month, day) = (2, 15)
+
+zodiac_day = filter(lambda x: x <= (month, day), zodiac_days)
+# print(zodiac_day)
+zodiac_len = len(list(zodiac_day))
+print(zodiac_name[zodiac_len])
+```
+
+### 2.5 列表的定义和常用操作
+
+**常用操作**：
+
+* append(x)：向列表中插入一个元素x
+* remove(x)：从列表中删除元素x
+
+```python
+a_list = ['abc', 'xyz']
+a_list.append('X')
+print(a_list)
+a_list.remove('xyz')
+print(a_list)
+```
+
+ ## 3. 条件与循环
+
+### 3.1 条件语句
+
+* **if语句**：
+
+  * 关键字
+  * 判断条件表达式
+  * 判断为真时的代码块
+
+  ```python
+  格式：
+  if 表达式:
+  	代码块
+  ```
+
+  * 可以和else、elif(else-if)语句组合成更复杂的判断
+
+  ```python
+  if 表达式:
+  	代码块
+  elif 表达式:
+  	代码块
+  else:
+  	代码块
+  ```
+
+* **for循环**：
+
