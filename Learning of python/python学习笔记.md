@@ -160,5 +160,97 @@ print(a_list)
   	代码块
   ```
 
-* **for循环**：
+### 3.2 循环
+
+* **for语句**：
+
+  ```python
+  for 迭代变量 in 可迭代对象:
+  	代码块
+      
+  # 例子    
+  chinese_zodiac = '猴鸡狗猪鼠牛虎兔龙蛇马羊'
+  
+  for cz in chinese_zodiac:
+      print(cz)
+  
+  for i in range(3): # 输出0-2
+      print(i)
+  
+  for i in range(1, 3): # 输出1-2
+      print(i)
+  
+  for year in range(2000, 2023):
+      print('%s 年的生肖是 %s' %(year, chinese_zodiac[year % 12]))
+  ```
+
+* **while语句**：
+
+  ```python
+  while 条件表达式:
+      代码块
+  ```
+
+* **for循环+if判断**:
+
+  ```python
+  # 输入一个日期判断其是哪个星座
+  zodiac_name = (u'魔羯座', u'水瓶座', u'双鱼座', u'白羊座', u'金牛座', u'双子座', u'巨蟹座',
+             u'狮子座', u'处女座', u'天秤座', u'天蝎座', u'射手座') # 在这u是指unicode编码，防止乱码
+  zodiac_days = ((1, 20), (2, 19), (3, 21), (4, 21), (5, 21), (6, 22), (7, 23),
+                 (8, 23), (9, 23), (10, 23), (11, 23), (12, 23))
+  
+  # 用户输入月份和日期
+  int_month = int(input('请输入月份：'))
+  int_day = int(input('请输入日期：'))
+  
+  for zd_num in range(len(zodiac_days)):
+      if zodiac_days[zd_num] >= (int_month, int_day):
+          print(zodiac_name[zd_num])
+          break
+      elif int_month == 12 and int_day > 23:
+          print(zodiac_name[0])
+          break
+  ```
+
+* **while循环+if判断**：
+
+  ```python
+  # 输入一个日期判断其是哪个星座
+  zodiac_name = (u'魔羯座', u'水瓶座', u'双鱼座', u'白羊座', u'金牛座', u'双子座', u'巨蟹座',
+             u'狮子座', u'处女座', u'天秤座', u'天蝎座', u'射手座') # 在这u是指unicode编码，防止乱码
+  zodiac_days = ((1, 20), (2, 19), (3, 21), (4, 21), (5, 21), (6, 22), (7, 23),
+                 (8, 23), (9, 23), (10, 23), (11, 23), (12, 23))
+  
+  # 用户输入月份和日期
+  int_month = int(input('请输入月份：'))
+  int_day = int(input('请输入日期：'))
+  n = 0
+  while zodiac_days[n] < (int_month, int_day):
+      if int_month == 12 and int_day > 23:
+          break
+      n += 1
+  print(zodiac_name[n])
+  ```
+
+## 4. 映射与字典
+
+* **字典**：
+
+  * 特性：包含哈希值和指向的对象
+
+  * 格式：`{"哈希值":"对象"}`
+
+  * 简单使用：
+
+    ```python
+    dict1 = {}
+    print(type(dict1))
+    dict2 = {'x':1, 'y':2}
+    dict2['z'] = 3
+    
+    print(dict2)
+    ```
+
+    
 
