@@ -252,5 +252,155 @@ print(a_list)
     print(dict2)
     ```
 
+* **列表推导式与字典推导式**：
+
+  ```python
+  # 1. 列表一般写法
+  even_list = []
+  for i in range(1, 11):  # 记录1-10中所有偶数的平方
+      if (i % 2) == 0:
+          even_list.append(i * i)
+  print(even_list)
+  # 1. 列表的列表推导式写法
+  even_list2 = [i * i for i in range(1, 11) if (i % 2) == 0]
+  print(even_list2)
+  
+  zodiac_name = (u'魔羯座', u'水瓶座', u'双鱼座', u'白羊座', u'金牛座', u'双子座', u'巨蟹座',
+                 u'狮子座', u'处女座', u'天秤座', u'天蝎座', u'射手座')
+  # 2. 字典的一般写法
+  z_dict = {}
+  for i in zodiac_name:
+      z_dict[i] = 0
+  print(z_dict)
+  
+  # 2. 字典的字典推导式写法
+  z_dict2 = {k: 0 for k in zodiac_name}
+  print(z_dict2)
+  ```
+
+## 5. 文件和输入输出
+
+### 5.1 文件的内建函数
+
+* **定义**：python自带的函数，不需要额外去安装
+* **基本的函数**：
+  1. open()：打开文件
+  2. read()：输入
+  3. readline()：输入一行
+  4. seek()：文件内移动
+  5. write()：输出
+  6. close()：关闭文件
+* **注意**：
+  * 在打开文件之后一定要对文件进行关闭，否则电脑突然关机的话你写入的信息就会丢失。
+
+### 5.2 文件的常用操作
+
+* 读取一行：`readline()`
+
+* 读取多行：`readlines()`得到一个列表，列表中每一个元素都是一行的内容
+
+* 读取整个内容：`read()`直接得到整个文章的内容，用字符串的形式去存储
+
+* 读取固定数字符：`read(x)`x代表读取的字符数量
+
+* 移动文件读取指针：
+
+  * 单个参数时：`seek(x)`代表移动到文章第几个字符处，从0开始
+  * 两个参数时：`seek(a, b)` 第一个参数代表偏移位置   第二个参数0表示从文件开头偏移1表示从当前位置偏移2表示从文件结尾
+
+* 例子：
+
+  ```python
+  # # 将小说的主要人物记录在文件中
+  # # file1 = open('name.txt') # 默认以只读的方式打开文件
+  # file1 = open('name.txt', 'w')  # 以写入的方式打开文件
+  # file1.write('诸葛亮')
+  # file1.close()
+  #
+  # file2 = open('name.txt')
+  # print(file2.read())
+  # file2.close()
+  #
+  # file3 = open('name.txt', 'a')  # 如果是以写入的方式打开文件在新写内容时会覆盖，这里用增加的方式进行写入
+  # file3.write('刘备')
+  
+  # file4 = open('name.txt')
+  # print(file4.readline()) # 读一行
+  #
+  # file5 = open('name.txt')
+  # # print(file5.readlines()) # 读取多行
+  # for line in file5.readlines():
+  #     print(line)
+  file6 = open('name.txt')
+  print('当前文件指针的位置 %s' % (file6.tell()))  # 文件指针在哪个位置
+  # print(file6.read())  # 读取所有文件
+  print('当前读取到了一个字符，字符的内容是 %s' % file6.read(1))  # 默认是读取所有文件，此处表读取一个字符
+  print('当前文件指针的位置 %s' % (file6.tell()))
+  file6.seek(2, 0)  # 第一个参数代表偏移位置   第二个参数 0表示从文件开头偏移 1表示从当前位置偏移 2从文件结尾
+  print('我们进行了seek操作')
+  print('文件指针回到了位置 %s' % (file6.tell()))
+  print('当前读取到了一个字符,字符的内容是 %s' % file6.read(1))  # 默认是读取所有文件，此处表读取一个字符
+  print('当前文件指针的位置 %s' % (file6.tell()))
+  file6.close()
+  ```
+
+## 6. 错误和异常
+
+* **异常**：
+
+  * 产生：出现错误时采用正常控制流以外的动作
+
+  * 异常处理的一般流程：
+
+    1. 检测到错误，引发异常
+    2. 对异常进行捕获操作
+
+  * 异常处理代码格式：
+
+    ```python
+    try:
+        <监控异常>
+    except Exception[,reason]:
+        <异常处理代码>
+    finally:
+        <无论异常是否发生都执行>  # 常用于文件关闭
+    ```
+
+  * 简单试验：
+
+    ```python
+    # try:
+    #     year = int(input('input year：'))
+    # except ValueError:
+    #     print('年份要输入数字!')
     
+    # except (ValueError, AttributeError, KeyError) 捕获多个异常时使用元组将其整合成一个对象
+    
+    # try:
+    #     print(1 / 0)
+    # except Exception as e:  # Exception代表所有错误信息
+    #     print('0不能做除数 %s' % e)
+    
+    # 自己定义错误信息
+    try:
+        raise NameError('helloError')
+    except NameError:
+        print('my Custom error')
+    ```
+
+
+
+## 7. 函数
+
+* 定义：对程序逻辑进行结构化的一种编程方法
+
+* 定义格式：
+
+  ```python
+  def 函数名称():
+  	代码
+  	return 需要返回的内容
+  ```
+
+* 函数的调用：`函数名称()`
 
