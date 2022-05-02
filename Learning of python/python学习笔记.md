@@ -404,3 +404,254 @@ print(a_list)
 
 * 函数的调用：`函数名称()`
 
+### 7.3 函数的迭代器与生成器
+
+* iter()：用来生成迭代器
+* next()：返回迭代器的下一个项目
+
+```python
+list1 = [1, 2, 3]
+it = iter(list1)
+print(next(it))
+print(next(it))
+print(next(it))
+print(next(it))
+
+list2 = ['a', 'b', 'c']
+for i in iter(list2):
+    print(i)
+```
+
+* 生成器：使用了yield的函数称为生成器，生成器是迭代器的一种。调用一个生成器函数，返回一个迭代器对象。
+
+```python
+# 自己手写一个浮点数range
+def frange(start, stop, step): # 使用了yield的函数我们称为生成器，也是迭代器的一种
+    x = start
+    while x < stop:
+        yield x
+        x += step
+for i in frange(10, 20, 0.5):
+    print(i)
+```
+
+### 7.4 Lambda表达式
+
+* **使用**：在我们仅仅使用函数进行简单计算的时候使用。省去了写return和定义函数名称的过程。
+
+```python
+def add(x, y):
+    return x + y
+lambda x,y: x + y
+```
+
+### 7.5 Python内建函数
+
+* filter(func, iterable)：将符合指定函数的项给选出来
+
+  ```python
+  a = [1, 2, 3, 4, 5, 6, 7]
+  list(filter(lambda x:x>2, a)) # 将符合指定函数的项给取出来
+  ```
+
+* map()：对每个元素依次进行操作变变换
+
+  ```python
+  a = [1, 2, 3]
+  b = [4, 5, 6]
+  list(map(lambda x:x+1, a)) # 对a列表中的每一项进行加一
+  list(map(lambda x,y:x+y, a, b))# a列表中的每一项加上b列表中的每一项
+  ```
+
+* reduce()：序列的所有项和初始值依次按照函数做运算<font color=red>注意：reduce虽然是内建函数，但是得用`from functools import reduce`导入</font>
+
+  ```python
+  reduce(lambda x,y: x+y, [2,3,4], 1) # (( 1 + 2 ) + 3 ) + 4
+  # 初始值可以省略，当省略时，默认为0
+  ```
+
+* zip()：可以使两个元组纵向合并。可以实现字典的key、value对调
+
+  ```python
+  a = (1, 2, 3)
+  b = (4, 5, 6)
+  tuple(zip(a, b))
+  for i in zip(a, b): # zip是一个可迭代的函数,其有一个iter方法
+      print(i)
+  dicta = {'a':'aaa', 'b':'bbb'}
+  dictb = dict(zip(dicta.values(), dicta.keys()))
+  dictb
+  ```
+
+* 补充：
+  * 可迭代的函数都会有一个iter的方法
+
+### 7.6 闭包
+
+* **定义**：嵌套的函数，且当外部函数的参数被内部函数给引用的情况下我们称其为闭包。
+
+* **小示例**：
+
+  ```python
+  # 使用闭包实现计数器
+  def counter(FIRST=0):
+      cnt = [FIRST]
+      def add_one():
+          cnt[0] += 1
+          return cnt[0]
+      return add_one
+  num1 = counter(5)
+  num2 = counter(10)
+  print(num1())
+  print(num1())
+  print(num2())
+  print(num2())
+  ```
+
+  运行结果：
+
+  >6
+  >
+  >7
+  >
+  >11
+  >
+  >12
+
+  发现：
+
+  互不影响，这也是闭包的好处。
+
+  ```python
+  # 使用闭包实现线段
+  def a_line(a, b):
+      def arg_y(x):
+          return a * x + b
+      return arg_y
+  line1 = a_line(3, 5)
+  line2 = a_line(10, 5)
+  print(line1(5))
+  print(line2(5))
+  '''
+  闭包优雅写法
+  def a_line(a, b):
+      return lambda x:a*x+b
+  '''
+  ```
+
+  * 好处：比传统的实现方式传参少，定义函数时只需要传a、b两个参数，使用线段求y时只用传x一个参数。
+
+### 7.7 装饰器
+
+* 定义与闭包类似，只不过它传递的参数是一个函数，使用方法经过不断演化后得到了简化。
+
+* 示例：
+
+  * 粗略计算一下程序的运行时间
+
+  ```python
+  import time
+  # 未用装饰器前
+  def I_sleep():
+      time.sleep(3)
+  start_time = time.time()
+  I_sleep()
+  stop_time = time.time()
+  print("程序运行了%s" %(stop_time-start_time))
+  
+  # 用装饰器后
+  def timer(func):
+      def wrapper():
+          start_time = time.time()
+          func()
+          stop_time = time.time()
+          print("程序运行了%s" %(stop_time-start_time))
+      return wrapper
+  @timer # 语法糖，修饰I_sleep2
+  def I_sleep2():
+      time.sleep(3)
+  I_sleep2() # 实际上是(timer(I_sleep2))()这么运行的
+  ```
+
+* 带参数的装饰器：
+
+  ```python
+  # 带参数的装饰器
+  def out(func):
+      def inner(a,b):
+          print('start')
+          func(a,b)
+          print('stop')
+      return inner
+  @out
+  def add(a,b):
+      print(a + b)  
+  add(7,3) # 实际上可以理解为运行的时候是这样的(out(add))(7,3),所以实际上是inner(7,3)
+  ```
+
+* 针对不同函数装饰器做适应：
+
+  ```python
+  # 带参数的装饰器
+  def new(argv):
+      def out(func):
+          def inner(a,b):
+              print('start %s %s' %(argv, func.__name__)) # __name__取传入函数的名字
+              func(a,b)
+              print('stop')
+          return inner
+      return out
+  @new('add_module')
+  def add(a,b):
+      print(a + b) 
+  @new('sub_module')
+  def sub(a,b):
+      print(a - b)
+  add(3, 5)
+  sub(5, 3)
+  ```
+
+* 好处：
+
+  1. 调用函数时不用在上面下面去编写重复的代码，可以将这些代码放在装饰器里面。
+  2. 装饰器更易于复用
+
+### 7.8 自定义上下文管理器
+
+先来看看一般打开文件的方法
+
+```python
+fd = open('name.txt')
+try:
+    for line in fd:
+        print(line)
+finally:
+    fd.close()
+```
+
+上面这种方法是不优雅的
+
+下面我们使用`with`上下文管理器的方法去精简
+
+```python
+with open('name.txt') as f:
+    for line in f:
+        print(line)
+```
+
+通过这种方法省去了我们写finally，因为在出现异常的时候，它会自动帮我们做关闭的操作。
+
+## 8. 模块
+
+在代码量变得相当大之后，将需要重复使用的有组织的代码段放在一起组成一个文件，这个文件就是模块。可以附加到现有的程序中。
+
+* 导入：附加的过程
+
+* 导入的一般写法：
+
+  ```python
+  import 模块名称 as 别名
+  from 模块名称 import 方法名
+  ```
+
+  
