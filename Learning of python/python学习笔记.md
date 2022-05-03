@@ -484,6 +484,7 @@ lambda x,y: x + y
   ```
 
 * 补充：
+  
   * 可迭代的函数都会有一个iter的方法
 
 ### 7.6 闭包
@@ -653,5 +654,148 @@ with open('name.txt') as f:
   import 模块名称 as 别名
   from 模块名称 import 方法名
   ```
+
+
+## 9. 面向对象编程
+
+### 9.1 类与实例
+
+```python
+# 传统表示玩家信息的方法
+user1 = {'name':'tom','hp':100}
+user2 = {'name':'jerry','hp':80}
+
+def print_role(rolename):
+    print('name is %s,hp is %s' %(rolename['name'], rolename['hp']))
+print_role(user1)
+print_role(user2)
+# 使用类的方法
+class Player():
+    def __init__(self, name, hp):
+        self.name = name
+        self.hp = hp
+    def print_role(self): # 定义了一个方法
+        print('name is %s,hp is %s' %(self.name, self.hp))
+user1 = Player('Tom', 100) # 类的实例化
+user2 = Player('Jerry', 80)
+user1.print_role()
+user2.print_role()
+```
+
+### 9.2 增加类的属性和方法
+
+```python
+# 使用类的方法
+class Player():
+    def __init__(self, name, hp, occu):
+        self.__name = name # 变量被称作属性
+        self.hp = hp
+        self.occu = occu
+    def print_role(self): # 定义了一个方法(函数被称作方法)
+        print('name is %s,hp is %s,occupation is %s' %(self.__name, self.hp, self.occu))
+    def updateName(self, newname):
+        self.__name = newname
+user1 = Player('Tom', 100, 'war') # 类的实例化
+user2 = Player('Jerry', 80, 'master')
+user1.print_role()
+user2.print_role()
+
+user1.updateName('wilson')
+user1.print_role()
+```
+
+其中name默认是公有成员，也可以通过实例.name的方式去访问和更改。
+
+如果想使得name不能使用.name 的方式去访问和更改，可以在其类中使用`__name`。
+
+### 9.3 类的继承
+
+```python
+class Monster():
+    # 定义怪物类
+    pass # 告知系统我们定义了一个Monster，但是现在我们还不想去实现它
+class Animals(Monster): # 继承自Monster类
+    # 普通怪物
+    pass
+class Boss(Monster):
+    # Boss类怪物
+    pass
+```
+
+### 9.4 自定义with语句
+
+```python
+class Testwith():
+    def __enter__(self):
+        print('run')
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print('exit')
+with Testwith():
+    print('test is running')
+```
+
+运行结果：
+
+run
+
+test is running 
+
+exit
+
+```python
+class Testwith():
+    def __enter__(self):
+        print('run')
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_tb is None: # 没有异常它的值就是None
+            print('正常结束')
+        else:
+            print('has error %s' %exc_tb)
+with Testwith():
+    print('test is running')
+    raise NameError('testNameError') # 手动抛出异常
+```
+
+## 10. 多线程编程
+
+* 定义：同时处理多个请求的方法
+
+* 线程的简单使用：
+
+  ```python
+  import threading
+  import time
+  from threading import current_thread
+  def myThread(arg1, arg2):
+      # print(current_thread().getName(),'start')
+      time.sleep(1)
+      print('%s %s' %(arg1, arg2))
+      # print(current_thread().getName(),'stop')
+  for i in range(1, 6, 1):
+      t1 = threading.Thread(target=myThread,args=(i, i + 1))
+      t1.start()
+  ```
+
+* 让主线程等待其他线程结束之后再结束
+
+  ```python
+  import threading
+  from threading import current_thread
+  class Mythread(threading.Thread):
+      def run(self):
+          print(current_thread().getName(), 'start')
+          print('run')
+          print(current_thread().getName(), 'stop')
+  t1 = Mythread()
+  t1.start() # 线程使用start启动的时候实际上是调用了run方法
+  t1.join() # 等待t1线程结束才会向下执行
+  
+  print(current_thread().getName(), 'end')
+  
+  ```
+
+  
+
+  
 
   
