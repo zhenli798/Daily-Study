@@ -1013,7 +1013,94 @@ with Testwith():
 
 * 特点：两者大多数功能类似，但pathlib好的是可以创建目录。
 
+## 12. 机器学习库
 
+### 12.1 Numpy库
+
+* **用途**：主要用于高性能科学计算和数据分析，是常用的高级数据分析库的基础包。
+
+* **简单使用**：
+
+  ```python
+  import numpy as np
+  arr1 = np.array([2, 3, 4])
+  print(arr1)
+  print(arr1.dtype)
+  
+  arr2 = np.array([2.1, 3.1, 4.1])
+  print(arr2)
+  print(arr2.dtype)
+  print(arr1 + arr2)
+  
+  # Numpy数组和标量的计算
+  print(arr2 * 10)
+  data = [[1,2,3], [4,5,6]]
+  arr3 = np.array(data) # 将列表转为二维矩阵
+  print(arr3)
+  print(arr3.dtype)
+  print(type(arr3))
+  
+  print(np.zeros(10)) # 定义了一个一维的长度为10的数组，这个数组的所有值都是0
+  print(np.zeros((3, 5))) # 定义一个3x5的矩阵，这个矩阵的所有值为0
+  print(np.ones((4, 6))) # 定义一个4x6的矩阵，初始值都为1
+  print(np.empty((2,3,2))) # 定义了一个三维矩阵，初始值为随机值
+  
+  # Numpy数组的索引和切片
+  arr4 = np.arange(10)
+  print(arr4[5])
+  print(arr4[5:8])
+  arr4[5:8] = 0
+  print(arr4)
+  arr_slice = arr4[5:8]
+  arr_slice[:] = 1 # 由于python这里是引用，故而这么做会影响到arr4的内容
+  print(arr4)
+  arr_slice = arr4[5:8].copy()
+  arr_slice[:] = 0 # 这样子做操作不会影响arr4，因为它是arr4的一个副本
+  print(arr4)
+  print(arr_slice)
+  arr5 = np.array(['a', 'b', 'c', 'd'])
+  print(arr5[1]) # 下标从0开始计算
+  ```
+
+### 12.2 Pandas库
+
+* **好处**(相比于Numpy)：
+
+  * 自动帮你将数据对齐显示
+  * 可以灵活的处理缺失的数据、
+  * 还可以实现像类似sql语句一样的连接操作
+
+* **特点**：
+
+  * 会帮我们自动添加索引
+  * 键值可以不唯一
+
+* **简单使用**：
+
+  ```python
+  import pandas as pd
+  obj = pd.Series([4, 5, 6, -7])
+  print(obj)
+  
+  print(obj.index) # 打印索引
+  print(obj.values) # 打印值
+  
+  obj2 = pd.Series([4, 5, 6, 3], index = {'a', 'b', 'd', 'c'})
+  print(obj2)
+  obj2['c'] = 6
+  print(obj2)
+  print('c' in obj2) # 判断是否存在键'c'
+  print('f' in obj2)
+  
+  # 将字典转化到我们的series中
+  sdata = {'beijing' : 35000, 'shanghai' : 70000, 'guangzhou' : 16000, 'shenzhen' : 5000}
+  obj3 = pd.Series(sdata)
+  print(obj3)
+  obj3.index = ['bj', 'sh', 'gz', 'sz'] # 修改索引为它们的缩写
+  print(obj3)
+  ```
+
+  
 
 
 
