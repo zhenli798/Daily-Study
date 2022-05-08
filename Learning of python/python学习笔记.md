@@ -794,8 +794,226 @@ with Testwith():
   
   ```
 
-  
 
-  
+* 生产者和消费者：
 
+  ```python
+  from threading import Thread,current_thread
+  import time
+  import random
+  from queue import Queue
   
+  queue = Queue(5) # 定义队列的长度
+  class ProducerThread(Thread):
+      def run(self):
+          name = current_thread().getName() # 获取线程的名字
+          nums = range(100)
+          global queue
+          while True:
+              num = random.choice(nums)
+              queue.put(num)
+              print('生产者 %s 生产了数据 %s' %(name, num))
+              t = random.randint(1, 3)
+              time.sleep(t)
+              print('生产者 %s 睡眠了 %s 秒' %(name, t))
+  class ConsumerThread(Thread):
+      def run(self):
+          name = current_thread().getName()
+          global queue
+          while True:
+              num = queue.get()
+              queue.task_done() # 封装好了关于线程等待和线程同步的代码
+              print('消费者 %s 消耗了数据 %s' %(name, num))
+              t = random.randint(1, 5)
+              time.sleep(t)
+              print('消费者 %s 睡眠了 %s 秒' %(name, t))
+  p1 = ProducerThread(name = 'p1')
+  p1.start()
+  p2 = ProducerThread(name = 'p2')
+  p2.start()
+  p3 = ProducerThread(name = 'p3')
+  p3.start()
+  c1 = ConsumerThread(name = 'c1')
+  c1.start()
+  c2 = ConsumerThread(name = 'c2')
+  c2.start()          
+  ```
+
+## 11. 标准库
+
+* **定义**：安装python后自带的库
+* **目前比较广泛的模块**：
+  1. 文字处理的re
+  2. 日期类型的time、datetime
+  3. 数字和数学类型的math、random
+  4. 文件和目录访问的pathlib、os.path
+  5. 数据压缩和归档的tarfile
+  6. 通用操作系统的os、logging、argparse
+  7. 多线程的threading、queue
+  8. Internet数据处理的base64、json、urllib
+  9. 结构化标记处理工具的html、xml
+  10. 开发工具的unitest
+  11. 调试工具的timeit
+  12. 软件包发布的venv
+  13. 运行服务的\_\_main\_\_
+
+### 11.1 正则表达式库re的使用
+
+* 导入`import re`
+
+* 单个字符的匹配：
+
+  ```python
+  import re
+  p = re.compile('a')
+  print(p.match('a'))
+  print(p.match('b'))
+  ```
+
+  运行结果：
+
+  ```python
+  <re.Match object; span=(0, 1), match='a'> # 匹配到的位置
+  None # 匹配失败
+  ```
+
+* 正则表达式元字符：
+
+  * `.`匹配任意一个字符除换行符
+  * `\d`匹配任意一个数字
+  * <a href="[(32条消息) 正则表达式_小陌白的博客-CSDN博客](https://xiaomobai.blog.csdn.net/article/details/119743379)">更多</a>
+
+* 匹配日期：
+
+  ```python
+  p = re.compile(r'(\d+)-(\d+)-(\d+)') # r是告知python字符串中的特殊符号不要进行转义
+  print(p.match('2022-05-05').group()) # 获取匹配到的内容
+  print(p.match('2022-05-07').group(1)) # 获取年
+  print(p.match('2022-05-07').groups()) # 获取年月日，用元组去存
+  year,month,day = ('2022', '05', '07')
+  ```
+
+* 正则表达式match与search的区别
+
+  * match要求原字符和输入字符完全匹配。即当第一个字符与原字符不匹配时便返回匹配失败。
+  * search不会，它会沿输入字符继续向后进行匹配。
+  * match经常是用于完全匹配之后进行分组。
+
+* 正则表达式库替换函数sub
+
+  * sub(str1, str2, str3)：
+
+    * str1：匹配的规则
+    * str2：匹配到的字符串要替换成的内容
+    * str3：将要替换的字符串
+
+  * 使用：
+
+    ```python
+    # 删去电话号码结尾不合法部分
+    phone = '123-456-789 # 这是一个电话号码'
+    p = re.sub(r'#.*$', '', phone)
+    print(p)
+    # 删去-
+    p2 = re.sub(r'\D','',p)
+    print(p2)
+    ```
+
+    运行结果：
+
+    > 123-456-789
+    >
+    > 123456789
+
+* 补充：
+
+  * search只能匹配一次，想要匹配多次要用findall
+
+### 11.2 日期与时间函数库
+
+* 时间库：
+
+  * 引入`import time`
+
+  * 函数：
+
+    * time()：从1970年1月1日到现在经历了多少秒
+    * localtime([sec])：格式化时间戳为本地的时间
+    * strftime(str)：返回str格式的当前时间
+
+  * 使用：
+
+    ```python
+    import time
+    print(time.time()) # 查19700101到现在过了多少秒
+    print(time.localtime())
+    print(time.strftime('%Y%m%d'))
+    ```
+
+* 以当前时间为准，计算指定偏移后的时间
+
+  ```python
+  import datetime
+  print(datetime.datetime.now())
+  newtime = datetime.timedelta(minutes = 10) # 计算十分钟偏移量
+  print(datetime.datetime.now() + newtime) # 显示十分钟后的时间
+  
+  one_day = datetime.datetime(2008,5,27)
+  new_date = datetime.timedelta(days = 10)
+  print(one_day + new_date)
+  ```
+
+### 11.2 数学相关库
+
+* math
+
+* random
+
+  * randint()：返回指定区间的随机数
+  * choice(obj)：从对象中任选一值
+
+  ```python
+  import random
+  print(random.randint(1, 5))
+  print(random.choice([1, 2, 'a', 'b']))
+  ```
+
+### 11.3 文件与目录操作库
+
+* os.path
+
+  * 引入：`import os`或者`from os import path`
+
+  * 使用：
+
+    ```python
+    from os import path
+    print(path.abspath('..')) # 根据相对路径.获得绝对路径v
+    print(path.exists('./01 hello_world.py')) # 判断文件是否存在
+    print(path.isfile('./01 hello_world.py')) # 判断是否是文件
+    print(path.isdir('./01 hello_world.py')) # 判断是否是目录
+    print(path.isdir('.'))
+    print(path.join('/tmp/','01 hello_world.py')) # 路径拼接
+    ```
+
+* pathlib
+
+  * 引入：`from pathlib import Path`
+
+  * 使用：
+
+    ```python
+    from pathlib import Path
+    p = Path('.')
+    print(p.resolve()) # 根据相对路径获得绝对路径，跟我们的path.abspath()一样
+    print(p.is_dir()) # 判断当前位置是否是目录
+    q = Path('./a/b/c')
+    Path.mkdir(q, parents=True) # parents=True是当父级目录不存在时会创建父级目录
+    ```
+
+* 特点：两者大多数功能类似，但pathlib好的是可以创建目录。
+
+
+
+
+
