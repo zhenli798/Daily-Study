@@ -1098,9 +1098,188 @@ with Testwith():
   print(obj3)
   obj3.index = ['bj', 'sh', 'gz', 'sz'] # 修改索引为它们的缩写
   print(obj3)
+  
+data = {'city' : ['shanghai', 'guangzhou', 'beijing', 'shenzhen'],
+          'year' : [2016, 2017, 2018, 2019],
+          'pop' : [1.5, 1.8, 1.3, 2.0]}
+  frame = pd.DataFrame(data)
+  print(frame)
+  
+  frame2 = pd.DataFrame(data, columns = ['year', 'city', 'pop'])
+  print(frame2)
+  
+  # 将二维表格转换为一维的数据
+  print(frame2['city'])
+  print(frame2.year)
+  
+  # 为pandas增加一个新的列
+  frame2['cap'] = frame2.city == 'beijing'
+  print(frame2)
+  
+  pop = { 'beijing' : {2008:1.5, 2009:2.0},
+          'shanghai' : {2008:2.0, 2009:3.6}
+         }
+  frame3 = pd.DataFrame(pop)
+  print(frame3)
+  # 行和列的转换
+  print(frame3.T)
+  
+  obj4 = pd.Series([4.5, 7.2, -5.3, 3.6], index = ['b', 'd', 'c', 'a'])
+  obj5 = obj4.reindex(['a', 'b', 'c', 'd', 'e']) # 按索引顺序排序，不存在的索引将出现空值
+  print(obj5)
+  
+  obj6 = obj4.reindex(['a', 'b', 'c', 'd', 'e'], fill_value = 0) # 给空值填充0
+  print(obj6)
+  
+  obj7 = pd.Series(['blue', 'yellow', 'pink'], index = [0, 2, 4])
+  print(obj7.reindex(range(6)))
+  print(obj7.reindex(range(6), method = 'ffill')) # 空值填充为其前一个数值
+  
+  from numpy import nan as NA
+  # 删除缺失值的一行数据
+  data = pd.Series([1, NA, 2])
+  print(data.dropna())
+  
+  # 在DataFrame删除缺失值的情况
+  # 1. 某一列的某一行有缺失
+  data = pd.DataFrame([[1.,  6.5, 3], [1., NA, NA], [NA, NA, NA]])
+  data[4] = NA
+  print(data)
+  print(data.dropna()) # 发现只要出现了na的一行就会被全部删掉
+  print(data.dropna(how = 'all')) # 只删掉全部出现na的一行
+  print(data.dropna(axis = 1, how = 'all')) # 删掉全部出现na的一列
+  data.fillna(0) # 这种方法是对data副本进行填充0，并返回，并不会直接修改data
+  data.fillna(0, inplace = True) # 使用了inplace参数则代表是对data进行填充修改
+  print(data)
+  
+  import numpy as np
+  data3 = pd.Series(np.random.randn(10),
+                 index = [['a', 'a', 'a', 'b', 'b', 'b', 'c', 'c', 'd', 'd'],
+                          [1, 2, 3, 1, 2, 3, 1, 2, 2, 3]])
+  # 层次化索引的用途
+  print(data3)
+  print(data3.unstack()) # 将一维数据转化为二维数据
+  print(data3.unstack().stack()) # 再转换回来
   ```
-
   
 
+### 12.3 Matplotlib库
 
+* **用途**：绘图
 
+* **简单使用**：
+
+  ```python
+  import matplotlib.pyplot as plt
+  
+  # 绘制简单的曲线
+  plt.plot([1, 3, 5], [4, 8, 10])
+  plt.show()
+  
+  import numpy as np
+  x =  np.linspace(-np.pi, np.pi, 100) # x轴的定义域为-3.14·3.14，中间间隔100个元素
+  print(x)
+  plt.plot(x, np.sin(x))
+  # 显示所画的图
+  plt.show()
+  
+  x = np.linspace(-np.pi * 2, np.pi * 2, 100)
+  plt.figure(1, dpi = 50) # 创建图表，dpi代表精度，精度越高，画的图就越大就越清晰
+  for i in range(1, 5): # 画四条线
+      plt.plot(x, np.sin(x / i))
+  plt.show()
+  
+  plt.figure(1, dpi = 50) # 创建图表1，dpi代表图片精细度，dpi越大文件越大，杂志要300以上
+  data = [1, 1, 1, 2, 2, 2, 3, 3, 4, 5, 5, 6, 4]
+  plt.hist(data) # 只要传入数据，直方图就会统计数据出现的次数
+  plt.show()
+  
+  x = np.arange(1, 10)
+  y = x
+  fig = plt.figure()
+  plt.scatter(x, y, c = 'r', marker = 'o') # c = 'r' 表示散点的颜色为红色，marker表示指定三点多边形为圆形
+  plt.show()
+  
+  import pandas as pd
+  iris = pd.read_csv('./iris_training.csv')
+  print(iris.head())
+  # 绘制散点图
+  iris.plot(kind = 'scatter', x = '120', y = '4')
+  
+  # 没啥用，只是让pandas的plot方法显示
+  plt.show()
+  
+  # 使用seaborn来绘制图
+  import seaborn as sns
+  import warnings 
+  warnings.filterwarnings('ignore')
+  iris = pd.read_csv('./iris_training.csv')
+  # 设置样式
+  sns.set(style = 'white', color_codes = True)
+  # 设置绘制格式为散点图
+  # sns.jointplot(x = '120', y = '4', data = iris, size = 5)
+  # distplot绘制曲线
+  # sns.distplot(iris['120'])
+  sns.FacetGrid(iris, hue = 'virginica', size = 5).map(plt.scatter, '120', '4').add_legend() # 按virginica属性分类，给点分配不同颜色
+  sns.FacetGrid(iris, hue = 'virginica', size = 5).map(plt.scatter, 'setosa', 'versicolor').add_legend()
+  ```
+
+## 13. 爬虫
+
+### 13.1 网页数据采集与urllib库
+
+* **网络库**：
+
+  * urllib库：http协议常用库
+  * requests库：http协议常用库
+  * BeautifulSoup库：xml格式处理库
+
+  urlib跟requests库都是用于收集数据的库，BeautifulSoup是用于数据处理的库
+
+* **urlib库**：
+
+  * 使用：`from urllib import request`
+
+  * 例子：
+
+    ```python
+    from urllib import request
+    
+    url = 'http://www.baidu.com'
+    response = request.urlopen(url, timeout = 1)
+    print(response.read().decode('utf-8')) # read直接读是按照单个字节解释出来的，而中文往往要占多个字节，所以要用decode做编码解析
+    ```
+
+  * 专门用于测试get和post请求的网页：http://www.httpbin.org/
+
+  * 发送get请求：
+
+    * 注意：使用urlopen的时候一般都要指定timeout，不然一旦请求超时程序会卡死
+
+    ```python
+    from urllib import request
+    response = request.urlopen('http://httpbin.org/get', timeout=1) 
+    print(response.read())
+    
+    # 超时异常捕获处理
+    import urllib
+    import socket
+    try:
+        response3 = request.urlopen('http://httpbin.org/get', timeout=0.1)
+    except urllib.error.URLError as e:
+        if isinstance(e.reason, socket.timeout):
+            print('TIME OUT')
+    ```
+
+  * 发送post请求：
+
+    ```python
+    from urllib import parse # 处理post数据
+    from urllib import request
+    data = bytes(parse.urlencode({'word':'hello'}), encoding='utf8')
+    # print(data)
+    response2 = request.urlopen('http://httpbin.org/post', data=data)
+    print(response2.read().decode('utf-8'))
+    ```
+
+    
