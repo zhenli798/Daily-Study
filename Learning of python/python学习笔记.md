@@ -1099,23 +1099,25 @@ with Testwith():
   obj3.index = ['bj', 'sh', 'gz', 'sz'] # 修改索引为它们的缩写
   print(obj3)
   
+  ```
+
 data = {'city' : ['shanghai', 'guangzhou', 'beijing', 'shenzhen'],
           'year' : [2016, 2017, 2018, 2019],
           'pop' : [1.5, 1.8, 1.3, 2.0]}
   frame = pd.DataFrame(data)
   print(frame)
-  
+
   frame2 = pd.DataFrame(data, columns = ['year', 'city', 'pop'])
   print(frame2)
-  
+
   # 将二维表格转换为一维的数据
   print(frame2['city'])
   print(frame2.year)
-  
+
   # 为pandas增加一个新的列
   frame2['cap'] = frame2.city == 'beijing'
   print(frame2)
-  
+
   pop = { 'beijing' : {2008:1.5, 2009:2.0},
           'shanghai' : {2008:2.0, 2009:3.6}
          }
@@ -1123,23 +1125,23 @@ data = {'city' : ['shanghai', 'guangzhou', 'beijing', 'shenzhen'],
   print(frame3)
   # 行和列的转换
   print(frame3.T)
-  
+
   obj4 = pd.Series([4.5, 7.2, -5.3, 3.6], index = ['b', 'd', 'c', 'a'])
   obj5 = obj4.reindex(['a', 'b', 'c', 'd', 'e']) # 按索引顺序排序，不存在的索引将出现空值
   print(obj5)
-  
+
   obj6 = obj4.reindex(['a', 'b', 'c', 'd', 'e'], fill_value = 0) # 给空值填充0
   print(obj6)
-  
+
   obj7 = pd.Series(['blue', 'yellow', 'pink'], index = [0, 2, 4])
   print(obj7.reindex(range(6)))
   print(obj7.reindex(range(6), method = 'ffill')) # 空值填充为其前一个数值
-  
+
   from numpy import nan as NA
   # 删除缺失值的一行数据
   data = pd.Series([1, NA, 2])
   print(data.dropna())
-  
+
   # 在DataFrame删除缺失值的情况
   # 1. 某一列的某一行有缺失
   data = pd.DataFrame([[1.,  6.5, 3], [1., NA, NA], [NA, NA, NA]])
@@ -1151,7 +1153,7 @@ data = {'city' : ['shanghai', 'guangzhou', 'beijing', 'shenzhen'],
   data.fillna(0) # 这种方法是对data副本进行填充0，并返回，并不会直接修改data
   data.fillna(0, inplace = True) # 使用了inplace参数则代表是对data进行填充修改
   print(data)
-  
+
   import numpy as np
   data3 = pd.Series(np.random.randn(10),
                  index = [['a', 'a', 'a', 'b', 'b', 'b', 'c', 'c', 'd', 'd'],
@@ -1282,4 +1284,70 @@ data = {'city' : ['shanghai', 'guangzhou', 'beijing', 'shenzhen'],
     print(response2.read().decode('utf-8'))
     ```
 
-    
+  * HTTP头部信息的模拟：
+  
+    ```python
+    from urllib import parse # 处理post数据
+    from urllib import request
+    headers = {
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Host": "httpbin.org",
+        "Upgrade-Insecure-Requests": "1",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36",
+        "X-Amzn-Trace-Id": "Root=1-627a1828-401ed66a579dbc0173b7ee85"
+    }
+    dict = {
+        'name' : 'value'
+    }
+    data = bytes(parse.urlencode(dict), encoding = 'utf8')
+    req = request.Request(url = 'http://httpbin.org/post', data = data, headers = headers, method = 'POST')
+    response = request.urlopen(req)
+    print(response.read().decode('utf-8'))
+    ```
+
+### 13.2 requests库的基本使用
+
+* **使用**：`import requests`
+
+* **get请求**：
+
+  ```python
+  import requests
+  url = 'http://httpbin.org/get'
+  data = {'key': 'value'}
+  response = requests.get(url, data)
+  print(response.text)
+  ```
+
+* **post请求**：
+
+  ``` python
+  import requests
+  url = 'http://httpbin.org/post'
+  data = {'key' : 'value'}
+  response = requests.post(url, data)
+  print(response.text) # 返回类型转为为json格式 response.json()
+  ```
+
+* **爬虫小栗子**：
+
+  ```python
+  import requests
+  import re
+  
+  content = requests.get('http://www.mnw.cn/news/china/')
+  content.encoding = 'utf8'
+  # print(content.text)
+  pattern = re.compile(r'<div class="item  noimg.*?<a.*?>(.*?)</a>', re.S)
+  results = re.findall(pattern, content.text)
+  # print(results)
+  
+  for result in results:
+      print(re.sub('\s', '', result)) # 去除空白符
+  ```
+
+* **re.S的作用**：
+
+  >  不使用re.S时，则只在**每一行内**进行匹配，如果存在一行没有，就换下一行重新开始，使用re.S参数以后，正则表达式会将这个字符串看做整体，在整体中进行匹配 。
