@@ -1099,25 +1099,24 @@ with Testwith():
   obj3.index = ['bj', 'sh', 'gz', 'sz'] # 修改索引为它们的缩写
   print(obj3)
   
-  ```
-
-data = {'city' : ['shanghai', 'guangzhou', 'beijing', 'shenzhen'],
+  # 将字典转化到我们的dataframe中
+  data = {'city' : ['shanghai', 'guangzhou', 'beijing', 'shenzhen'],
           'year' : [2016, 2017, 2018, 2019],
           'pop' : [1.5, 1.8, 1.3, 2.0]}
   frame = pd.DataFrame(data)
   print(frame)
-
-  frame2 = pd.DataFrame(data, columns = ['year', 'city', 'pop'])
+  
+  frame2 = pd.DataFrame(data, columns = ['year', 'city', 'pop']) # 调换列的顺序
   print(frame2)
-
+  
   # 将二维表格转换为一维的数据
   print(frame2['city'])
   print(frame2.year)
-
+  
   # 为pandas增加一个新的列
   frame2['cap'] = frame2.city == 'beijing'
   print(frame2)
-
+  # 求转置
   pop = { 'beijing' : {2008:1.5, 2009:2.0},
           'shanghai' : {2008:2.0, 2009:3.6}
          }
@@ -1125,23 +1124,23 @@ data = {'city' : ['shanghai', 'guangzhou', 'beijing', 'shenzhen'],
   print(frame3)
   # 行和列的转换
   print(frame3.T)
-
+  
   obj4 = pd.Series([4.5, 7.2, -5.3, 3.6], index = ['b', 'd', 'c', 'a'])
   obj5 = obj4.reindex(['a', 'b', 'c', 'd', 'e']) # 按索引顺序排序，不存在的索引将出现空值
   print(obj5)
-
+  
   obj6 = obj4.reindex(['a', 'b', 'c', 'd', 'e'], fill_value = 0) # 给空值填充0
   print(obj6)
-
+  
   obj7 = pd.Series(['blue', 'yellow', 'pink'], index = [0, 2, 4])
   print(obj7.reindex(range(6)))
   print(obj7.reindex(range(6), method = 'ffill')) # 空值填充为其前一个数值
-
+  
   from numpy import nan as NA
   # 删除缺失值的一行数据
   data = pd.Series([1, NA, 2])
   print(data.dropna())
-
+  
   # 在DataFrame删除缺失值的情况
   # 1. 某一列的某一行有缺失
   data = pd.DataFrame([[1.,  6.5, 3], [1., NA, NA], [NA, NA, NA]])
@@ -1149,11 +1148,12 @@ data = {'city' : ['shanghai', 'guangzhou', 'beijing', 'shenzhen'],
   print(data)
   print(data.dropna()) # 发现只要出现了na的一行就会被全部删掉
   print(data.dropna(how = 'all')) # 只删掉全部出现na的一行
+  # 2. 某一列的某一列有缺失
   print(data.dropna(axis = 1, how = 'all')) # 删掉全部出现na的一列
   data.fillna(0) # 这种方法是对data副本进行填充0，并返回，并不会直接修改data
   data.fillna(0, inplace = True) # 使用了inplace参数则代表是对data进行填充修改
   print(data)
-
+  # 层次化索引
   import numpy as np
   data3 = pd.Series(np.random.randn(10),
                  index = [['a', 'a', 'a', 'b', 'b', 'b', 'c', 'c', 'd', 'd'],
@@ -1163,7 +1163,6 @@ data = {'city' : ['shanghai', 'guangzhou', 'beijing', 'shenzhen'],
   print(data3.unstack()) # 将一维数据转化为二维数据
   print(data3.unstack().stack()) # 再转换回来
   ```
-  
 
 ### 12.3 Matplotlib库
 
@@ -1351,3 +1350,109 @@ data = {'city' : ['shanghai', 'guangzhou', 'beijing', 'shenzhen'],
 * **re.S的作用**：
 
   >  不使用re.S时，则只在**每一行内**进行匹配，如果存在一行没有，就换下一行重新开始，使用re.S参数以后，正则表达式会将这个字符串看做整体，在整体中进行匹配 。
+
+### 13.3 BeautifulSoup库的基本使用
+
+* **作用**：处理请求得到的html文本，一般情况下比使用正则更容易处理得到想要内容
+
+* **简单使用**：
+
+  ```python
+  html_doc = """
+  <html><head><title>网页标题</title></head><body>
+  <p class= "item2">这是一个段落</p>
+  <p class="item" id="first">这是第二个段落</p>
+  <a href="http://baidu.com">百度一下</a>
+  </body></html>
+  """
+  from bs4 import BeautifulSoup
+  soup = BeautifulSoup(html_doc, 'lxml')
+  print(soup.prettify()) # 格式化显示
+  
+  # 找到title标签
+  print(soup.title)
+  # 找到title标签里面的内容
+  print(soup.title.string)
+  
+  # 找到第一个p标签
+  print(soup.p)
+  
+  # 找到第一个p标签里面的内容
+  print(soup.p.string)
+  # 找到第一个p标签里面class的名字
+  print(soup.p['class'])
+  # 找到所有p标签
+  print(soup.find_all('p'))
+  # 找到id为first的标签
+  print(soup.find(id='first'))
+  # 找到所有a标签的链接
+  for link in soup.find_all('a'):
+      print(link.get('href'))
+  ```
+
+* **爬取百度新闻**：
+
+  ```python
+  from bs4 import BeautifulSoup  # 编码解码库
+  import requests # 请求访问库
+  
+  # 用 dict 定义http头，伪装浏览器访问，避免被拒之门外
+  headers = {
+      "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36 LBBROWSER"
+  }
+  
+  #目标网址为 百度新闻
+  url = "http://news.baidu.com"
+  
+  
+  # 创建函数，传入 URL 获取新闻标题 和对应链接
+  
+  def craw2(url):
+      response = requests.get(url, headers=headers) # 获取 指定 URL 内容， 头部用 headers ,把这个动作 赋予给 response
+      soup = BeautifulSoup(response.text, "lxml") # 用 BeautifulSoup 把 response 正文内容，用lxml 格式 整理，并赋值给Soup
+      # print(soup)   #尝试打印， 能否获取内容
+  
+      # 把 soup 里面 ，class= mod-tab-pane active 的 <div> 标签，全部找出来，并 逐一赋值 给 title_href
+      for title_href in soup.find_all("div", class_="mod-tab-pane active"):
+          for title in title_href.find_all("a"):  # 然后把 title_href里的 <a> 标签 全部找出来，并逐一赋值给 title
+              title_url=title.get("href") #在title 中，找出href 的值，并赋予给 title——url
+              print(title.text,title_url)     #输出 标题和对应链接
+  craw2(url)
+  ```
+
+* **爬取图片网站的图片**：
+
+  ```python
+  import os # 引入目录操作相关库
+  import shutil 
+  # 用 dict 定义http头，伪装浏览器访问，避免被拒之门外
+  headers = {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36",
+  }
+  url = "http://www.netbian.com/"
+  def download_jpg(image_url, image_localpath):
+      response = requests.get(image_url, stream = True)
+      if response.status_code == 200: # 图片存在
+          with open(image_localpath, 'wb') as f: # 打开本地路径
+              response.raw.deconde_content = True
+              shutil.copyfileobj(response.raw, f)
+  
+  # 获取图片
+  def craw3(url):
+      response = requests.get(url, headers=headers) 
+      soup = BeautifulSoup(response.text, 'lxml')
+      # print(soup.prettify())
+      for div in soup.find_all('div', class_="list"):
+          for img in div.find_all('img'):
+              imgurl = img.get('src')
+              dir = os.path.abspath('./爬取的图片/')
+              filename = os.path.basename(imgurl) # 自动帮我们把https://th.wallhaven.cc/small/k7/k7v9yq.jpg前面的目录路径给去掉剩余k7v9yq.jpg
+              imgpath = os.path.join(dir, filename)
+              print('开始下载 %s' % imgurl)
+              download_jpg(imgurl, imgpath)
+  
+  craw3(url)
+  ```
+
+  
+
