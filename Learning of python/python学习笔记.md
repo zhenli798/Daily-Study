@@ -404,6 +404,39 @@ print(a_list)
 
 * 函数的调用：`函数名称()`
 
+* 函数传参时使用指定关键字：
+
+  ```python
+  print('abc', end='\n') # end是指定关键字参数，好处是不用按顺序输入参数
+      
+  def func(a, b, c):
+      print('a = %s' %a)
+      print('b = %s' %b)
+      print('c = %s' %c)
+  func(1, 2, 3)
+  func(1, c = 2, b = 3) # 指定关键字，不用按顺序输入参数
+  ```
+
+### 7.1 函数的可变长参数
+
+```python
+# 取得参数的个数
+def howlong(first, *other):
+    print(1 + len(other))
+howlong(1, 2, 3)
+```
+
+### 7.2 函数的变量作用域
+
+```python
+var1 = 123
+def func():
+    var1 = 456 # 它的影响范围只是在这个函数内，如果要让它的影响范围变大的话，要加上关键字global，即global var1 
+    print(var1) # 输出456
+func()
+print(var1) # 输出的还是123
+```
+
 ### 7.3 函数的迭代器与生成器
 
 * iter()：用来生成迭代器
@@ -720,6 +753,42 @@ class Animals(Monster): # 继承自Monster类
 class Boss(Monster):
     # Boss类怪物
     pass
+# version 2
+class Monster():
+    # 定义怪物类
+    def __init__(self, hp = 100):
+        self.hp = hp
+    def run(self):
+        print('移动到某个位置')
+    def whoami(self):
+        print('我是怪物父类')
+class Animals(Monster): # 继承自Monster类
+    # 普通怪物
+    def __init__(self, hp = 10):
+        super().__init__(hp)
+        
+class Boss(Monster):
+    # Boss类怪物
+    def __init__(self, hp=800):
+        super().__init__(hp)
+    def whoami(self): # 有重名的方法，使用时会覆盖父类的方法
+        print('我是Boss')
+a1 = Monster(200)
+a1.run()
+print(a1.hp)
+
+a2 = Animals(100)
+a2.run()
+print(a2.hp)
+
+a3 = Boss(1000)
+a3.whoami()
+
+print('a1的类型 %s' %type(a1))
+print('a2的类型 %s' %type(a2))
+print('a3的类型 %s' %type(a3))
+
+print(isinstance(a2, Monster)) # 判断对象是否是一个已知类型
 ```
 
 ### 9.4 自定义with语句
@@ -1454,6 +1523,11 @@ with Testwith():
   craw3(url)
   ```
 
+## 14. 设计合理的代码结构
+
+* 如果使用的功能不需要调用库的话，尽量不要去调用库
+* 在编写大型程序时，优先把逻辑编写出来，具体实现封装到函数当中
+* 程序带有的功能建议单独写到一个模块中
 
 ## 知识点
 
