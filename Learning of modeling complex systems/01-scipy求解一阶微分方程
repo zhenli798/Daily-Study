@@ -9,3 +9,5 @@ result = odeint(diff_equation, 1, x)
 plt.plot(x, result[:,0])
 plt.grid()
 plt.show()
+
+
